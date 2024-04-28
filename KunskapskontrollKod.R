@@ -171,15 +171,16 @@ plot(model3, which = 4)
 ##############data partition##################
 X3 <- car_data3[, c('stdhästkraft-stdålder')]
 y3 <- car_data3$logpris
+View(X3)
 set.seed(42)
-index_train <- createDataPartition(y, p = 0.6, list = FALSE)
-index_validate_test <- createDataPartition(y[index_train], p = 0.5, list = FALSE)
-X_train3 <- X[index_train, ]
-y_train3 <- y[index_train]
-X_validate3 <- X[index_validate_test, ]
-y_validate3 <- y[index_validate_test]
-X_test3 <- X[-index_train, ]
-y_test3 <- y[-index_train]
+index_train3 <- createDataPartition(y, p = 0.6, list = FALSE)
+index_validate_test3 <- createDataPartition(y[index_train3], p = 0.5, list = FALSE)
+X_train3 <- X3[index_train3, ]
+y_train3 <- y3[index_train3]
+X_validate3 <- X3[index_validate_test3, ]
+y_validate3 <- y3[index_validate_test3]
+X_test3 <- X3[-index_train3, ]
+y_test3 <- y3[-index_train3]
 #################resampling########################
 train_control <- trainControl(method = "cv",number = 5)     
 model <- train(pris ~ .,                       
@@ -191,23 +192,25 @@ print(resampling_results)
 summary(resampling_results)
 predictions <- predict(model, newdata = data.frame(pris = y, X))
 ####################1000kr###############################
-model3 <- lm(pris ~ ., data = data.frame(cbind(pris = y_test3, X_test3)))
+model3 <- lm(pris ~ ., data = data.frame(cbind(pris = y_train3, X_train3)))
+View(X_train3)
+summary(model3)
 fitted_values3 <- fitted(model3)
 fitted_values[fitted_values < 0] <- 1000
-train_data3 <- data.frame(cbind(pris = y_test3, X_test3))
+train_data3 <- data.frame(cbind(pris = y_train3, X_train3))
 results3 <- data.frame(Index = rownames(train_data3), Actual_Prices = y_train3, Fitted_Values = fitted_values3)
 View(results3)
 plot(results3)
 ####################predictions########################################
-predictions <- predict(model3, newdata = data.frame(X_test))
-mse <- mean((predictions - y_test)^2)
-print(paste("Mean Sqr Err:", mse))
+predictions3 <- predict(model3, newdata = data.frame(X_test3))
+View(predictions3)
+mse3 <- mean((predictions3 - y_test3)^2)
+print(paste("Mean Sqr Err:", mse3))
 fitted_values3 <- fitted(model3)
-train_data <- data.frame(cbind(pris = y_train3, X_train3))
-results <- data.frame(Index = rownames(train_data3), Actual_Prices = y_train3, Fitted_Values = fitted_values3)
-plot(y_train3, fitted_values3, main = "Act vs Fit Values",
-     xlab = "Act Price", ylab = "Fit Val")
-abline(lm(fitted_values3 ~ y_train3), col = "green")
-
-
+plot(y_test3, predictions3, main = "Act vs Pred Values testset",
+     xlab = "Act Price", ylab = "Pred Val")
+abline(lm(predictions3 ~ y_test3), col = "green")
+print(rmse3)
+rmse3<-sqrt(mse3)
+summary(predictions3-y_test3)
 
